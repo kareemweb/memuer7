@@ -203,7 +203,7 @@ export default function App() {
     inputRing: string;
   }> = {
     vibrant: {
-      bg: "bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900",
+      bg: "bg-gradient-to-br from-indigo-900 via-purple-900 via-pink-900 to-fuchsia-950",
       sidebar: "lg:bg-indigo-800/40",
       sidebarMobile: "bg-indigo-900/95",
       rail: "bg-black/20",
@@ -217,7 +217,7 @@ export default function App() {
       inputRing: "ring-pink-500/30"
     },
     midnight: {
-      bg: "bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950",
+      bg: "bg-gradient-to-br from-slate-950 via-slate-900 via-indigo-950 to-blue-950",
       sidebar: "lg:bg-slate-900/40",
       sidebarMobile: "bg-slate-950/95",
       rail: "bg-black/40",
@@ -231,7 +231,7 @@ export default function App() {
       inputRing: "ring-slate-500/30"
     },
     forest: {
-      bg: "bg-gradient-to-br from-emerald-950 via-teal-900 to-green-950",
+      bg: "bg-gradient-to-br from-emerald-950 via-teal-900 via-green-950 to-emerald-900",
       sidebar: "lg:bg-emerald-900/40",
       sidebarMobile: "bg-emerald-950/95",
       rail: "bg-black/30",
@@ -245,7 +245,7 @@ export default function App() {
       inputRing: "ring-emerald-500/30"
     },
     crimson: {
-      bg: "bg-gradient-to-br from-rose-950 via-red-900 to-orange-950",
+      bg: "bg-gradient-to-br from-rose-950 via-red-950 via-orange-950 to-rose-900",
       sidebar: "lg:bg-rose-900/40",
       sidebarMobile: "bg-rose-950/95",
       rail: "bg-black/30",
@@ -260,7 +260,83 @@ export default function App() {
     }
   };
 
-  const currentTheme = isWcThemeActive ? {
+  const isThemeAnimated = user?.preferences?.animatedTheme !== false;
+  const themeName = user?.preferences?.theme || 'vibrant';
+  const animationLook = user?.preferences?.animationLook || (
+    themeName === 'midnight' ? 'cyber' :
+    themeName === 'forest' ? 'nebula' :
+    themeName === 'crimson' ? 'lava' : 'aurora'
+  );
+
+  const getAnimationClasses = () => {
+    switch (animationLook) {
+      case 'cyber':
+        return {
+          bgClass: 'animate-theme-gradient-cyber bg-[length:300%_300%]',
+          orb1Class: 'animate-cyber-1',
+          orb2Class: 'animate-cyber-2',
+          orb3Class: 'animate-cyber-3',
+          orbOpacity: 'opacity-65'
+        };
+      case 'lava':
+        return {
+          bgClass: 'animate-theme-gradient-lava bg-[length:300%_300%]',
+          orb1Class: 'animate-lava-1',
+          orb2Class: 'animate-lava-2',
+          orb3Class: 'animate-lava-3',
+          orbOpacity: 'opacity-70'
+        };
+      case 'nebula':
+        return {
+          bgClass: 'animate-theme-gradient-nebula bg-[length:300%_300%]',
+          orb1Class: 'animate-nebula-1',
+          orb2Class: 'animate-nebula-2',
+          orb3Class: 'animate-nebula-3',
+          orbOpacity: 'opacity-60'
+        };
+      case 'aurora':
+      default:
+        return {
+          bgClass: 'animate-theme-gradient-aurora bg-[length:300%_300%]',
+          orb1Class: 'animate-aurora-1',
+          orb2Class: 'animate-aurora-2',
+          orb3Class: 'animate-aurora-3',
+          orbOpacity: 'opacity-55'
+        };
+    }
+  };
+
+  const getOrbColors = () => {
+    switch (themeName) {
+      case 'midnight':
+        return {
+          orb1: 'bg-cyan-400',
+          orb2: 'bg-blue-500',
+          orb3: 'bg-indigo-500'
+        };
+      case 'forest':
+        return {
+          orb1: 'bg-emerald-400',
+          orb2: 'bg-teal-400',
+          orb3: 'bg-lime-400'
+        };
+      case 'crimson':
+        return {
+          orb1: 'bg-rose-500',
+          orb2: 'bg-orange-500',
+          orb3: 'bg-yellow-400'
+        };
+      case 'vibrant':
+      default:
+        return {
+          orb1: 'bg-pink-500',
+          orb2: 'bg-fuchsia-500',
+          orb3: 'bg-violet-500'
+        };
+    }
+  };
+
+  const resolvedTheme = isWcThemeActive ? {
     bg: "bg-gradient-to-br from-indigo-950 via-indigo-900/40 to-indigo-950",
     sidebar: "lg:bg-indigo-950/45 border-r border-indigo-500/10",
     sidebarMobile: "bg-indigo-950/98",
@@ -273,7 +349,14 @@ export default function App() {
     bubbleMe: "bg-indigo-600/35 border border-indigo-500/20 text-indigo-50",
     bubbleOther: "bg-white/5 border border-white/10 text-indigo-100",
     inputRing: "ring-indigo-500/30"
-  } : (themeStyles[user?.preferences?.theme || 'vibrant'] || themeStyles.vibrant);
+  } : (themeStyles[themeName] || themeStyles.vibrant);
+
+  const currentTheme = {
+    ...resolvedTheme,
+    bg: isThemeAnimated 
+      ? resolvedTheme.bg + " " + getAnimationClasses().bgClass
+      : resolvedTheme.bg
+  };
 
   const [activeChat, setActiveChat] = useState<ChatSession | null>(null);
   const [chats, setChats] = useState<ChatSession[]>([]);
@@ -3573,8 +3656,15 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className={"h-dvh w-full flex items-center justify-center " + currentTheme.bg}>
-        <div className="flex flex-col items-center gap-4">
+      <div className={cn("h-dvh w-full flex items-center justify-center relative overflow-hidden", currentTheme.bg)}>
+        {isThemeAnimated && (
+          <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            <div className={cn("absolute top-[10%] left-[20%] w-[350px] h-[350px] rounded-full filter blur-[100px]", getAnimationClasses().orbOpacity, getAnimationClasses().orb1Class, getOrbColors().orb1)}></div>
+            <div className={cn("absolute bottom-[15%] right-[20%] w-[400px] h-[400px] rounded-full filter blur-[120px]", getAnimationClasses().orbOpacity, getAnimationClasses().orb2Class, getOrbColors().orb2)}></div>
+            <div className={cn("absolute top-[40%] right-[30%] w-[300px] h-[300px] rounded-full filter blur-[80px]", getAnimationClasses().orbOpacity, getAnimationClasses().orb3Class, getOrbColors().orb3)}></div>
+          </div>
+        )}
+        <div className="flex flex-col items-center gap-4 relative z-10">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-500 to-yellow-500 animate-pulse flex items-center justify-center">
             <span className="font-black text-2xl text-white">M</span>
           </div>
@@ -3586,8 +3676,15 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className={"h-dvh w-full flex flex-col items-center justify-start sm:justify-center p-4 overflow-y-auto custom-scrollbar " + currentTheme.bg}>
-        <div className="max-w-md w-full my-auto space-y-6 sm:space-y-8 bg-indigo-900/40 backdrop-blur-xl p-6 sm:p-8 rounded-3xl sm:rounded-[40px] border border-white/10 shadow-2xl shrink-0">
+      <div className={cn("h-dvh w-full flex flex-col items-center justify-start sm:justify-center p-4 overflow-y-auto custom-scrollbar relative overflow-hidden", currentTheme.bg)}>
+        {isThemeAnimated && (
+          <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+            <div className={cn("absolute top-[10%] left-[20%] w-[350px] h-[350px] rounded-full filter blur-[100px]", getAnimationClasses().orbOpacity, getAnimationClasses().orb1Class, getOrbColors().orb1)}></div>
+            <div className={cn("absolute bottom-[15%] right-[20%] w-[400px] h-[400px] rounded-full filter blur-[120px]", getAnimationClasses().orbOpacity, getAnimationClasses().orb2Class, getOrbColors().orb2)}></div>
+            <div className={cn("absolute top-[40%] right-[30%] w-[300px] h-[300px] rounded-full filter blur-[80px]", getAnimationClasses().orbOpacity, getAnimationClasses().orb3Class, getOrbColors().orb3)}></div>
+          </div>
+        )}
+        <div className="max-w-md w-full my-auto space-y-6 sm:space-y-8 bg-indigo-900/40 backdrop-blur-xl p-6 sm:p-8 rounded-3xl sm:rounded-[40px] border border-white/10 shadow-2xl shrink-0 relative z-10">
           <div className="text-center">
             <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-pink-500 to-yellow-500 flex items-center justify-center shadow-2xl shadow-pink-500/20 mb-4 sm:mb-6">
               <span className="font-black text-3xl sm:text-4xl text-white">M</span>
@@ -3811,6 +3908,13 @@ export default function App() {
 
   return (
     <div className={cn("flex h-dvh h-[100dvh] w-full overflow-hidden font-sans text-white relative", currentTheme.bg)}>
+      {isThemeAnimated && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className={cn("absolute top-[10%] left-[20%] w-[350px] h-[350px] rounded-full filter blur-[100px]", getAnimationClasses().orbOpacity, getAnimationClasses().orb1Class, getOrbColors().orb1)}></div>
+          <div className={cn("absolute bottom-[15%] right-[20%] w-[400px] h-[400px] rounded-full filter blur-[120px]", getAnimationClasses().orbOpacity, getAnimationClasses().orb2Class, getOrbColors().orb2)}></div>
+          <div className={cn("absolute top-[40%] right-[30%] w-[300px] h-[300px] rounded-full filter blur-[80px]", getAnimationClasses().orbOpacity, getAnimationClasses().orb3Class, getOrbColors().orb3)}></div>
+        </div>
+      )}
       {isOffline && (
         <div className="absolute top-0 left-0 right-0 z-[100] bg-red-600 text-white text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] py-1 text-center animate-pulse">
           Offline Mode • Encryption Enabled • Synchronization Pending
@@ -5784,6 +5888,61 @@ export default function App() {
                       ))}
                     </div>
                   </div>
+                  <div>
+                    <div className="flex items-center justify-between ml-1">
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-300">Ambience Motion</label>
+                      <span className="text-[8px] font-mono uppercase px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 tracking-wider">Dynamic</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => updateProfile({ preferences: { ...user?.preferences, animatedTheme: !isThemeAnimated } })}
+                      className={cn(
+                        "w-full mt-2 py-2.5 px-4 rounded-xl border text-xs font-bold transition-all duration-300 flex items-center justify-between shadow-lg cursor-pointer",
+                        isThemeAnimated
+                          ? "bg-indigo-500/15 border-indigo-500/25 text-indigo-300 hover:bg-indigo-500/25"
+                          : "bg-white/5 border-white/5 text-zinc-400 hover:bg-white/10"
+                      )}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Radio className={cn("w-4 h-4 text-indigo-300", isThemeAnimated && "animate-pulse text-pink-400")} />
+                        {isThemeAnimated ? "Smooth Shifting & Flowing Orbs" : "Static Solid Palette"}
+                      </span>
+                      <span className="text-[9px] font-black uppercase tracking-widest opacity-60">
+                        {isThemeAnimated ? "ENABLED" : "DISABLED"}
+                      </span>
+                    </button>
+                  </div>
+                  {isThemeAnimated && (
+                    <div>
+                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-300 ml-1 font-sans">Motion Look Fluidity</label>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        {[
+                          { id: 'aurora', name: 'Liquid Aurora', desc: 'Smooth wave flows' },
+                          { id: 'cyber', name: 'Cyber Storm', desc: 'Ultra-fast neon sweeps' },
+                          { id: 'lava', name: 'Lava Pulse', desc: 'Dynamic magma sweeps' },
+                          { id: 'nebula', name: 'Nebula Glow', desc: 'Saturated wide sweeps' }
+                        ].map(look => (
+                          <button
+                            key={look.id}
+                            type="button"
+                            onClick={() => updateProfile({ preferences: { ...user?.preferences, animationLook: look.id } })}
+                            className={cn(
+                              "p-2.5 rounded-xl border text-left transition-all duration-300 flex flex-col justify-between group cursor-pointer relative overflow-hidden",
+                              animationLook === look.id
+                                ? "bg-pink-500/10 border-pink-500/30 text-white shadow-md shadow-pink-500/10"
+                                : "bg-white/5 border-white/5 text-zinc-400 hover:border-white/10 hover:text-white"
+                            )}
+                          >
+                            <span className="text-[10px] font-bold tracking-wide uppercase">{look.name}</span>
+                            <span className="text-[8px] opacity-75 mt-0.5 font-sans leading-none">{look.desc}</span>
+                            {animationLook === look.id && (
+                              <div className="absolute right-1.5 top-1.5 w-1.5 h-1.5 rounded-full bg-pink-400 animate-pulse"></div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-300 ml-1">Wallpaper Handshake</label>
                     <div className="grid grid-cols-2 gap-3 mt-2">

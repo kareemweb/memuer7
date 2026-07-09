@@ -16,6 +16,8 @@
           "type": "object",
           "properties": {
             "theme": { "type": "string" },
+            "animatedTheme": { "type": "boolean" },
+            "animationLook": { "type": "string" },
             "chatBackground": { "type": "string" },
             "pinnedChats": { "type": "array", "items": { "type": "string" } }
           }

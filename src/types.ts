@@ -12,6 +12,8 @@ export interface UserProfile {
   currentPeerId?: string | null;
   preferences?: {
     theme?: string;
+    animatedTheme?: boolean;
+    animationLook?: string;
     chatBackground?: string;
     customChatBg?: string;
     blockedUsers?: string[];

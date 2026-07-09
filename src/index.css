@@ -17,6 +17,134 @@
   .animate-rainbow-shift {
     animation: rainbow-shift 3s ease infinite;
   }
+
+  /* Animated background gradient shifting keyframes */
+  @keyframes theme-gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Rapid rotation shifting for Cyber Storm */
+  @keyframes theme-gradient-shift-fast {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 100%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .animate-theme-gradient-aurora {
+    background-size: 300% 300%;
+    animation: theme-gradient-shift 8s ease-in-out infinite;
+  }
+
+  .animate-theme-gradient-cyber {
+    background-size: 300% 300%;
+    animation: theme-gradient-shift-fast 4s ease infinite;
+  }
+
+  .animate-theme-gradient-lava {
+    background-size: 300% 300%;
+    animation: theme-gradient-shift 5s ease-in-out infinite;
+  }
+
+  .animate-theme-gradient-nebula {
+    background-size: 300% 300%;
+    animation: theme-gradient-shift 12s ease-in-out infinite;
+  }
+
+  /* -------------------
+     LOOK 1: Liquid Aurora (Smooth, fluid, fast)
+     ------------------- */
+  @keyframes float-aurora-1 {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(60px, -80px) scale(1.25); }
+    66% { transform: translate(-40px, 40px) scale(0.85); }
+    100% { transform: translate(0px, 0px) scale(1); }
+  }
+  @keyframes float-aurora-2 {
+    0% { transform: translate(0px, 0px) scale(1); }
+    50% { transform: translate(-80px, 80px) scale(1.3); }
+    100% { transform: translate(0px, 0px) scale(1); }
+  }
+  @keyframes float-aurora-3 {
+    0% { transform: translate(0px, 0px) scale(1); }
+    40% { transform: translate(90px, 40px) scale(0.8); }
+    80% { transform: translate(-50px, -60px) scale(1.2); }
+    100% { transform: translate(0px, 0px) scale(1); }
+  }
+
+  .animate-aurora-1 { animation: float-aurora-1 10s ease-in-out infinite; }
+  .animate-aurora-2 { animation: float-aurora-2 12s ease-in-out infinite; }
+  .animate-aurora-3 { animation: float-aurora-3 11s ease-in-out infinite; }
+
+  /* -------------------
+     LOOK 2: Cyber Storm (Hyper-speed neon jitter/glitch)
+     ------------------- */
+  @keyframes float-cyber-1 {
+    0% { transform: translate(0px, 0px) scale(1) rotate(0deg); filter: hue-rotate(0deg) saturate(1.5); }
+    25% { transform: translate(80px, -40px) scale(1.35) rotate(90deg); filter: hue-rotate(30deg) saturate(2); }
+    50% { transform: translate(-40px, 80px) scale(0.9) rotate(180deg); filter: hue-rotate(-30deg) saturate(1.8); }
+    75% { transform: translate(50px, 50px) scale(1.2) rotate(270deg); filter: hue-rotate(45deg) saturate(2); }
+    100% { transform: translate(0px, 0px) scale(1) rotate(360deg); filter: hue-rotate(0deg) saturate(1.5); }
+  }
+  @keyframes float-cyber-2 {
+    0% { transform: translate(0px, 0px) scale(1.1) rotate(0deg); }
+    50% { transform: translate(-90px, -90px) scale(1.4) rotate(-180deg); }
+    100% { transform: translate(0px, 0px) scale(1.1) rotate(-360deg); }
+  }
+  @keyframes float-cyber-3 {
+    0% { transform: translate(0px, 0px) scale(0.9) rotate(0deg); }
+    33% { transform: translate(100px, 100px) scale(1.3) rotate(120deg); }
+    66% { transform: translate(-100px, -50px) scale(0.8) rotate(240deg); }
+    100% { transform: translate(0px, 0px) scale(0.9) rotate(360deg); }
+  }
+
+  .animate-cyber-1 { animation: float-cyber-1 5s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite; }
+  .animate-cyber-2 { animation: float-cyber-2 6.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite; }
+  .animate-cyber-3 { animation: float-cyber-3 5.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite; }
+
+  /* -------------------
+     LOOK 3: Lava Pulse (Aggressive heartbeat pulse)
+     ------------------- */
+  @keyframes float-lava-1 {
+    0%, 100% { transform: scale(1) translate(0px, 0px); filter: brightness(1); }
+    50% { transform: scale(1.5) translate(40px, -40px); filter: brightness(1.6) contrast(1.2); }
+  }
+  @keyframes float-lava-2 {
+    0%, 100% { transform: scale(1.2) translate(0px, 0px); filter: brightness(1.1); }
+    50% { transform: scale(0.8) translate(-50px, 50px); filter: brightness(1.4) contrast(1.3); }
+  }
+  @keyframes float-lava-3 {
+    0%, 100% { transform: scale(0.9) translate(0px, 0px); filter: brightness(1); }
+    50% { transform: scale(1.4) translate(60px, 40px); filter: brightness(1.5) contrast(1.1); }
+  }
+
+  .animate-lava-1 { animation: float-lava-1 4s ease-in-out infinite; }
+  .animate-lava-2 { animation: float-lava-2 4.6s ease-in-out infinite; }
+  .animate-lava-3 { animation: float-lava-3 4.2s ease-in-out infinite; }
+
+  /* -------------------
+     LOOK 4: Nebula Glow (Massive glowing wide sweep)
+     ------------------- */
+  @keyframes float-nebula-1 {
+    0% { transform: translate(0px, 0px) scale(1); filter: blur(80px); }
+    50% { transform: translate(120px, -120px) scale(1.5); filter: blur(120px); }
+    100% { transform: translate(0px, 0px) scale(1); filter: blur(80px); }
+  }
+  @keyframes float-nebula-2 {
+    0% { transform: translate(0px, 0px) scale(1.2); filter: blur(90px); }
+    50% { transform: translate(-140px, 100px) scale(1.6); filter: blur(140px); }
+    100% { transform: translate(0px, 0px) scale(1.2); filter: blur(90px); }
+  }
+  @keyframes float-nebula-3 {
+    0% { transform: translate(0px, 0px) scale(0.85); filter: blur(70px); }
+    50% { transform: translate(150px, 150px) scale(1.4); filter: blur(110px); }
+    100% { transform: translate(0px, 0px) scale(0.85); filter: blur(70px); }
+  }
+
+  .animate-nebula-1 { animation: float-nebula-1 12s ease-in-out infinite; }
+  .animate-nebula-2 { animation: float-nebula-2 15s ease-in-out infinite; }
+  .animate-nebula-3 { animation: float-nebula-3 13.5s ease-in-out infinite; }
 }
 
 /* Custom Scrollbar */
