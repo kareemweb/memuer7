@@ -8,9 +8,9 @@ dotenv.config();
 
 async function askAIServer(prompt: string, history?: string): Promise<string> {
   try {
-    const apiKey = (process.env.OPENROUTER_API_KEY || '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').trim().replace(/^["']|["']$/g, '');
+    const apiKey = (process.env.GROQ_API_KEY || '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').trim().replace(/^["']|["']$/g, '');
     
-    const systemInstruction = `You are Memuer AI, a secure and private AI companion embedded within Memuer (an E2EE end-to-end encrypted messaging application) powered by OpenRouter. Maintain high confidentiality. Since you are talking in a secure, encrypted chat room, respect the privacy and do not leak user keys. Be helpful, concise, and professional.`;
+    const systemInstruction = `You are Memuer AI, a secure and private AI companion embedded within Memuer (an E2EE end-to-end encrypted messaging application) powered by Groq. Maintain high confidentiality. Since you are talking in a secure, encrypted chat room, respect the privacy and do not leak user keys. Be helpful, concise, and professional.`;
 
     const messages = [
       { role: "system", content: systemInstruction }
@@ -22,16 +22,14 @@ async function askAIServer(prompt: string, history?: string): Promise<string> {
       messages.push({ role: "user", content: prompt });
     }
 
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
-        "HTTP-Referer": "https://ais-dev-pkzpbfisuazihvbqrfi3me-809017712266.europe-west2.run.app",
-        "X-Title": "Memuer Chat"
+        "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "llama-3.3-70b-versatile",
         messages,
         temperature: 0.7
       })
@@ -39,15 +37,15 @@ async function askAIServer(prompt: string, history?: string): Promise<string> {
 
     if (!res.ok) {
       const errText = await res.text();
-      throw new Error(`OpenRouter API returned status ${res.status}: ${errText}`);
+      throw new Error(`Groq API returned status ${res.status}: ${errText}`);
     }
 
     const data = await res.json() as any;
     const content = data?.choices?.[0]?.message?.content;
     return content || '';
   } catch (error: any) {
-    console.error("Error calling OpenRouter API on server:", error);
-    return `Error: Could not generate a response from OpenRouter AI companion. Reason: ${error?.message || error}`;
+    console.error("Error calling Groq API on server:", error);
+    return `Error: Could not generate a response from Groq AI companion. Reason: ${error?.message || error}`;
   }
 }
 

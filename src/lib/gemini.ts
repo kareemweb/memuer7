@@ -28,12 +28,12 @@ export async function askAI(prompt: string, history?: string): Promise<string> {
   try {
     const env = (import.meta as any).env || {};
     // Extract VITE_ prefixed variables first to support static bundles
-    let apiKey = env.VITE_OPENROUTER_API_KEY || env.OPENROUTER_API_KEY || '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';
+    let apiKey = env.VITE_GROQ_API_KEY || env.GROQ_API_KEY || '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';
 
     if (!apiKey) {
       // Direct LocalStorage Override for static hosting installations without server companion
       try {
-         apiKey = localStorage.getItem('VITE_OPENROUTER_API_KEY') || localStorage.getItem('OPENROUTER_API_KEY') || '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';
+         apiKey = localStorage.getItem('VITE_GROQ_API_KEY') || localStorage.getItem('GROQ_API_KEY') || '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';
       } catch (_) {}
     }
 
@@ -46,12 +46,12 @@ export async function askAI(prompt: string, history?: string): Promise<string> {
 Memuer AI is running as a client-side static application because the backend server proxy is unreachable (404).
 
 To resolve this and activate your private AI:
-1. Set the environment variable 'VITE_OPENROUTER_API_KEY' in your web hosting dashboard and trigger a rebuild.
+1. Set the environment variable 'VITE_GROQ_API_KEY' in your web hosting dashboard and trigger a rebuild.
 2. Or, for a quick secure local session, run this command in your browser's Developer Console and reload:
-   localStorage.setItem('VITE_OPENROUTER_API_KEY', 'YOUR_OPENROUTER_API_KEY_HERE')`;
+   localStorage.setItem('VITE_GROQ_API_KEY', 'YOUR_GROQ_API_KEY_HERE')`;
     }
 
-    const systemInstruction = `You are Memuer AI, a secure and private AI companion embedded within Memuer (an E2EE end-to-end encrypted messaging application) powered by OpenRouter. Maintain high confidentiality. Since you are talking in a secure, encrypted chat room, respect the privacy and do not leak user keys. Be helpful, concise, and professional.`;
+    const systemInstruction = `You are Memuer AI, a secure and private AI companion embedded within Memuer (an E2EE end-to-end encrypted messaging application) powered by Groq. Maintain high confidentiality. Since you are talking in a secure, encrypted chat room, respect the privacy and do not leak user keys. Be helpful, concise, and professional.`;
 
     const messages = [
       { role: "system", content: systemInstruction }
@@ -63,16 +63,14 @@ To resolve this and activate your private AI:
       messages.push({ role: "user", content: prompt });
     }
 
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
-        "HTTP-Referer": "https://ais-dev-pkzpbfisuazihvbqrfi3me-809017712266.europe-west2.run.app",
-        "X-Title": "Memuer Chat"
+        "Authorization": `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "llama-3.3-70b-versatile",
         messages,
         temperature: 0.7
       })
@@ -80,14 +78,14 @@ To resolve this and activate your private AI:
 
     if (!res.ok) {
       const errText = await res.text();
-      throw new Error(`OpenRouter API returned status ${res.status}: ${errText}`);
+      throw new Error(`Groq API returned status ${res.status}: ${errText}`);
     }
 
     const data = await res.json() as any;
     const content = data?.choices?.[0]?.message?.content;
-    return content || "No response received from OpenRouter API.";
+    return content || "No response received from Groq API.";
   } catch (fallbackError: any) {
-    console.error("Browser-side direct OpenRouter call failed:", fallbackError);
-    return `Error: Could not secure responses from OpenRouter server proxy or client fallback. (${fallbackError?.message || fallbackError})`;
+    console.error("Browser-side direct Groq call failed:", fallbackError);
+    return `Error: Could not secure responses from Groq server proxy or client fallback. (${fallbackError?.message || fallbackError})`;
   }
 }
