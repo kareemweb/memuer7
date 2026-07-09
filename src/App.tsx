@@ -276,7 +276,6 @@ export default function App() {
   } : (themeStyles[user?.preferences?.theme || 'vibrant'] || themeStyles.vibrant);
 
   const [activeChat, setActiveChat] = useState<ChatSession | null>(null);
-  const [showEgyptSolidarityAnnouncement, setShowEgyptSolidarityAnnouncement] = useState(true);
   const [chats, setChats] = useState<ChatSession[]>([]);
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [contacts, setContacts] = useState<UserProfile[]>([]);
@@ -483,6 +482,15 @@ export default function App() {
       createdAt: number;
       active: boolean;
     } | null;
+    systemAnnouncement?: {
+      active: boolean;
+      emoji: string;
+      title: string;
+      message: string;
+      badge: string;
+      theme: string;
+      createdAt: number;
+    } | null;
     appLocked?: boolean;
     appLockedReason?: string;
     appLockedUntil?: string;
@@ -496,6 +504,14 @@ export default function App() {
   const [restartCountdown, setRestartCountdown] = useState(7);
   const [dismissedAnnouncementId, setDismissedAnnouncementId] = useState<number | null>(null);
   const [globalMsgInput, setGlobalMsgInput] = useState('');
+  const [announcementEmojiInput, setAnnouncementEmojiInput] = useState('🇪🇬');
+  const [announcementTitleInput, setAnnouncementTitleInput] = useState('Official System Announcement: World Cup Removal');
+  const [announcementMessageInput, setAnnouncementMessageInput] = useState(
+    'We have completely deactivated and removed all FIFA World Cup features, live trackers, and themed widgets from the platform. This action is taken in solid protest against systemic bias, racism, and unfairness shown towards the Egypt National Team. We refuse to host or facilitate features for any organization or tournament that treats nations with partiality or injustice.'
+  );
+  const [announcementBadgeInput, setAnnouncementBadgeInput] = useState('Solidarity Active');
+  const [announcementThemeInput, setAnnouncementThemeInput] = useState('egypt-solidarity');
+  const [dismissedSystemAnnouncementAt, setDismissedSystemAnnouncementAt] = useState<number | null>(null);
   const [lockoutReasonInput, setLockoutReasonInput] = useState('');
   const [lockoutDateInput, setLockoutDateInput] = useState('');
   const lastRestartTriggerRef = useRef<number>(Date.now());
@@ -585,6 +601,13 @@ export default function App() {
         }
         if (data.appLockedUntil) {
           setLockoutDateInput(data.appLockedUntil);
+        }
+        if (data.systemAnnouncement) {
+          setAnnouncementEmojiInput(data.systemAnnouncement.emoji || '🇪🇬');
+          setAnnouncementTitleInput(data.systemAnnouncement.title || 'Official System Announcement: World Cup Removal');
+          setAnnouncementMessageInput(data.systemAnnouncement.message || '');
+          setAnnouncementBadgeInput(data.systemAnnouncement.badge || 'Solidarity Active');
+          setAnnouncementThemeInput(data.systemAnnouncement.theme || 'egypt-solidarity');
         }
       } else {
         setSystemConfig({
@@ -3230,6 +3253,42 @@ export default function App() {
     }
   };
 
+  const handleAdminUpdateSystemAnnouncement = async (
+    active: boolean,
+    emoji: string,
+    title: string,
+    message: string,
+    badge: string,
+    theme: string
+  ) => {
+    if (!isUserOwnerMe) {
+      setErrorMessage("Unauthorized administrative attempt. Requires owner privileges.");
+      setTimeout(() => setErrorMessage(null), 3000);
+      return;
+    }
+    try {
+      const configRef = doc(db, 'system', 'config');
+      await setDoc(configRef, {
+        systemAnnouncement: {
+          active,
+          emoji: emoji.trim(),
+          title: title.trim(),
+          message: message.trim(),
+          badge: badge.trim(),
+          theme,
+          createdAt: Date.now()
+        },
+        updatedAt: new Date().toISOString(),
+        updatedBy: user?.uid || 'system'
+      }, { merge: true });
+      setErrorMessage(`System announcement status set to: ${active ? 'ACTIVE' : 'INACTIVE'}`);
+      setTimeout(() => setErrorMessage(null), 3000);
+    } catch (err: any) {
+      setErrorMessage(`Failed to update system announcement: ${err.message}`);
+      setTimeout(() => setErrorMessage(null), 3000);
+    }
+  };
+
   const handleAdminUpdateContactEmail = async (email: string) => {
     if (!isUserOwnerMe) {
       setErrorMessage("Unauthorized administrative attempt. Requires owner privileges.");
@@ -4474,37 +4533,60 @@ export default function App() {
 
       {/* Main Content Area: Chat Window */}
       <div className={cn("flex-1 flex flex-col relative min-w-0 overflow-hidden", currentTheme.bg)}>
-        {/* BIG ANNOUNCEMENT BANNER FOR EGYPT SOLIDARITY AND WORLD CUP REMOVAL */}
-        {showEgyptSolidarityAnnouncement && (
-          <div className="bg-gradient-to-r from-red-700 via-neutral-950 to-amber-600 border-b border-red-500/20 px-4 sm:px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 relative z-[45] shrink-0 shadow-2xl animate-fade-in">
-            <div className="flex items-start gap-4 text-left">
-              <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center shrink-0 shadow-inner select-none text-2xl">
-                🇪🇬
+        {/* BIG ANNOUNCEMENT BANNER */}
+        {(() => {
+          const isAnnouncementActive = systemConfig?.systemAnnouncement === undefined
+            ? true // Default to active if config doesn't exist yet (backward compatibility)
+            : !!systemConfig?.systemAnnouncement?.active;
+
+          const announcementEmoji = systemConfig?.systemAnnouncement?.emoji ?? '🇪🇬';
+          const announcementTitle = systemConfig?.systemAnnouncement?.title ?? 'Official System Announcement: World Cup Removal';
+          const announcementMessage = systemConfig?.systemAnnouncement?.message ?? 'We have completely deactivated and removed all FIFA World Cup features, live trackers, and themed widgets from the platform. This action is taken in solid protest against systemic bias, racism, and unfairness shown towards the Egypt National Team. We refuse to host or facilitate features for any organization or tournament that treats nations with partiality or injustice.';
+          const announcementBadge = systemConfig?.systemAnnouncement?.badge ?? 'Solidarity Active';
+          const announcementTheme = systemConfig?.systemAnnouncement?.theme ?? 'egypt-solidarity';
+          const announcementCreatedAt = systemConfig?.systemAnnouncement?.createdAt ?? 1719999999999;
+
+          const isDismissed = dismissedSystemAnnouncementAt === announcementCreatedAt;
+
+          if (!isAnnouncementActive || isDismissed) return null;
+
+          return (
+            <div className={cn(
+              "border-b px-4 sm:px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 relative z-[45] shrink-0 shadow-2xl animate-fade-in text-white",
+              announcementTheme === 'egypt-solidarity' ? 'bg-gradient-to-r from-red-700 via-neutral-950 to-amber-600 border-red-500/20' :
+              announcementTheme === 'critical-red' ? 'bg-gradient-to-r from-rose-950 via-zinc-950 to-rose-900 border-rose-500/20' :
+              announcementTheme === 'indigo-cyberpunk' ? 'bg-gradient-to-r from-indigo-950 via-zinc-950 to-cyan-900 border-indigo-500/20' :
+              'bg-gradient-to-r from-amber-950 via-zinc-950 to-yellow-900 border-yellow-500/20' // gold-alert
+            )}>
+              <div className="flex items-start gap-4 text-left">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0 shadow-inner select-none text-2xl">
+                  {announcementEmoji}
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-100 to-white flex items-center gap-2">
+                    <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    {announcementTitle}
+                  </h3>
+                  <p className="text-xs text-zinc-300 font-medium max-w-4xl leading-relaxed font-sans">
+                    {announcementMessage}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <h3 className="text-sm font-black uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-red-100 to-white flex items-center gap-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                  Official System Announcement: World Cup Removal
-                </h3>
-                <p className="text-xs text-zinc-300 font-medium max-w-4xl leading-relaxed font-sans">
-                  We have completely deactivated and removed all FIFA World Cup features, live trackers, and themed widgets from the platform. This action is taken in solid protest against systemic bias, racism, and unfairness shown towards the Egypt National Team. We refuse to host or facilitate features for any organization or tournament that treats nations with partiality or injustice.
-                </p>
+              <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
+                <span className="text-[9px] font-black uppercase bg-white/15 text-white px-3 py-1.5 rounded-full border border-white/30 tracking-widest select-none">
+                  {announcementBadge}
+                </span>
+                <button 
+                  onClick={() => setDismissedSystemAnnouncementAt(announcementCreatedAt)}
+                  className="p-1.5 hover:bg-white/10 text-white/50 hover:text-white rounded-lg transition-colors cursor-pointer"
+                  title="Dismiss Announcement"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             </div>
-            <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
-              <span className="text-[9px] font-black uppercase bg-red-500/15 text-red-400 px-3 py-1.5 rounded-full border border-red-500/30 tracking-widest select-none">
-                Solidarity Active
-              </span>
-              <button 
-                onClick={() => setShowEgyptSolidarityAnnouncement(false)}
-                className="p-1.5 hover:bg-white/10 text-white/50 hover:text-white rounded-lg transition-colors cursor-pointer"
-                title="Dismiss Announcement"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {!activeChat && (
             <div className="lg:hidden h-14 border-b border-white/5 flex items-center px-4 bg-black/10 backdrop-blur-md relative z-20 shrink-0">
@@ -7678,6 +7760,121 @@ export default function App() {
                                 <span className="font-bold">CURRENT LIVE BROADCAST:</span> "{systemConfig.globalAnnouncement.message}"
                               </div>
                             )}
+                          </div>
+                        </div>
+
+                        {/* Dynamic System Announcement Card */}
+                        <div className="border border-white/5 p-4 sm:p-6 rounded-2xl sm:rounded-[28px] bg-black/10 space-y-4">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                            <div className="space-y-1">
+                              <h3 className="text-sm font-bold uppercase tracking-wide text-white flex items-center gap-2 font-sans">
+                                <AlertTriangle className="w-4 h-4 text-rose-400 animate-pulse" />
+                                System Announcement Banner
+                              </h3>
+                              <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+                                Configure, modify, or completely remove a global high-priority announcement banner displayed across the chat feed for all users.
+                              </p>
+                            </div>
+                            <span className={cn(
+                              "text-[10px] font-mono uppercase px-2.5 py-1 rounded-full border font-black tracking-widest shrink-0 self-start sm:self-auto",
+                              (systemConfig?.systemAnnouncement === undefined ? true : systemConfig?.systemAnnouncement?.active)
+                                ? "bg-red-500/20 border-red-500/30 text-red-400 animate-pulse" 
+                                : "bg-zinc-800 border-white/5 text-zinc-500"
+                            )}>
+                              {(systemConfig?.systemAnnouncement === undefined ? true : systemConfig?.systemAnnouncement?.active) ? 'ACTIVE' : 'REMOVED'}
+                            </span>
+                          </div>
+
+                          <div className="space-y-3 pt-2 border-t border-white/5">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Emoji/Icon Accent:</label>
+                                <input
+                                  type="text"
+                                  value={announcementEmojiInput}
+                                  onChange={(e) => setAnnouncementEmojiInput(e.target.value)}
+                                  placeholder="e.g., 🇪🇬"
+                                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-rose-400 font-sans"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Badge Text:</label>
+                                <input
+                                  type="text"
+                                  value={announcementBadgeInput}
+                                  onChange={(e) => setAnnouncementBadgeInput(e.target.value)}
+                                  placeholder="e.g., Solidarity Active"
+                                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-rose-400 font-sans"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Announcement Title:</label>
+                              <input
+                                  type="text"
+                                  value={announcementTitleInput}
+                                  onChange={(e) => setAnnouncementTitleInput(e.target.value)}
+                                  placeholder="e.g., Official System Announcement: World Cup Removal"
+                                  className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-rose-400 font-sans"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Detailed Message Body:</label>
+                              <textarea
+                                value={announcementMessageInput}
+                                onChange={(e) => setAnnouncementMessageInput(e.target.value)}
+                                placeholder="Enter system announcement text..."
+                                className="w-full h-20 bg-zinc-950 border border-white/10 rounded-xl p-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-rose-400 font-sans custom-scrollbar resize-none"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">Visual Theme Palette:</label>
+                              <select
+                                value={announcementThemeInput}
+                                onChange={(e) => setAnnouncementThemeInput(e.target.value)}
+                                className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-rose-400 font-sans animate-none"
+                              >
+                                <option value="egypt-solidarity">Egypt Solidarity (Red/Black/Gold Gradient)</option>
+                                <option value="critical-red">Critical Alert (Crimson Deep Dark Gradient)</option>
+                                <option value="indigo-cyberpunk">Cyberpunk Indigo (Indigo/Teal/Cyan Gradient)</option>
+                                <option value="gold-alert">Special Advisory (Gold Amber/Zinc Gradient)</option>
+                              </select>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 pt-2">
+                              <button
+                                onClick={() => handleAdminUpdateSystemAnnouncement(
+                                  true,
+                                  announcementEmojiInput,
+                                  announcementTitleInput,
+                                  announcementMessageInput,
+                                  announcementBadgeInput,
+                                  announcementThemeInput
+                                )}
+                                className="py-2 px-4 bg-rose-600 hover:bg-rose-500 text-white font-black uppercase text-[10px] tracking-wider rounded-xl transition-all shadow-md font-sans flex items-center gap-1"
+                              >
+                                Publish / Update Announcement
+                              </button>
+                              
+                              {(systemConfig?.systemAnnouncement === undefined ? true : systemConfig?.systemAnnouncement?.active) && (
+                                <button
+                                  onClick={() => handleAdminUpdateSystemAnnouncement(
+                                    false,
+                                    announcementEmojiInput,
+                                    announcementTitleInput,
+                                    announcementMessageInput,
+                                    announcementBadgeInput,
+                                    announcementThemeInput
+                                  )}
+                                  className="py-2 px-4 bg-zinc-800 hover:bg-zinc-700 text-red-400 font-black uppercase text-[10px] tracking-wider rounded-xl transition-all border border-white/5"
+                                >
+                                  Remove / Deactivate Banner
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
 

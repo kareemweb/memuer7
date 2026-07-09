@@ -105,7 +105,19 @@
         "disableAI": { "type": "boolean" },
         "disableAIUntil": { "type": "string" },
         "updatedBy": { "type": "string" },
-        "updatedAt": { "type": "string" }
+        "updatedAt": { "type": "string" },
+        "systemAnnouncement": {
+          "type": "object",
+          "properties": {
+            "active": { "type": "boolean" },
+            "emoji": { "type": "string" },
+            "title": { "type": "string" },
+            "message": { "type": "string" },
+            "badge": { "type": "string" },
+            "theme": { "type": "string" },
+            "createdAt": { "type": "number" }
+          }
+        }
       }
     }
   },
