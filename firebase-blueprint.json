@@ -19,7 +19,8 @@
             "animatedTheme": { "type": "boolean" },
             "animationLook": { "type": "string" },
             "chatBackground": { "type": "string" },
-            "pinnedChats": { "type": "array", "items": { "type": "string" } }
+            "pinnedChats": { "type": "array", "items": { "type": "string" } },
+            "hasSeenDemo": { "type": "boolean" }
           }
         },
         "isHiddenFromDirectory": { "type": "boolean" },

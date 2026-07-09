@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { MessageSquare, Users, Settings, Plus, Search, Phone, Video, Shield, Info, Paperclip, Smile, Send, MoveVertical as MoreVertical, LogOut, User, Camera, Image as ImageIcon, Check, X, Menu, PhoneOff, Mic, MicOff, VideoOff, Volume2, VolumeX, UserX, Copy, Lock, ArrowLeft, ArrowRight, MonitorUp, TriangleAlert as AlertTriangle, FileSliders as Sliders, Wrench, Clock, Archive, Radio, RefreshCw, Mail, ShieldAlert, ShieldCheck, Pin, Eye, EyeOff } from 'lucide-react';
+import { MessageSquare, Users, Settings, Plus, Search, Phone, Video, Shield, Info, Paperclip, Smile, Send, MoveVertical as MoreVertical, LogOut, User, Camera, Image as ImageIcon, Check, X, Menu, PhoneOff, Mic, MicOff, VideoOff, Volume2, VolumeX, UserX, Copy, Lock, ArrowLeft, ArrowRight, MonitorUp, TriangleAlert as AlertTriangle, FileSliders as Sliders, Wrench, Clock, Archive, Radio, RefreshCw, Mail, ShieldAlert, ShieldCheck, Pin, Eye, EyeOff, Sparkles, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import EmojiPicker, { Theme as EmojiTheme } from 'emoji-picker-react';
 import { useAuth } from './hooks/useAuth';
@@ -25,6 +25,7 @@ import { twMerge } from 'tailwind-merge';
 import { VoiceMessagePlayer } from './components/VoiceMessagePlayer';
 import { useWorldCup } from './context/WorldCupContext';
 import { EgyptFootballGame } from './components/EgyptFootballGame';
+import { MemuerDemoOnboarding } from './components/MemuerDemoOnboarding';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -384,6 +385,7 @@ export default function App() {
 
   const [showEgyptGameBtn, setShowEgyptGameBtn] = useState(false);
   const [isEgyptGameOpen, setIsEgyptGameOpen] = useState(false);
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
 
   const playCrowdCheer = () => {
     try {
@@ -5811,6 +5813,9 @@ export default function App() {
           )}
         </AnimatePresence>
 
+        {/* Cinematic Welcome Demo Walkthrough */}
+        <MemuerDemoOnboarding forceOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
+
         {/* Profile Modal */}
         <AnimatePresence>
           {isProfileModalOpen && (
@@ -6029,6 +6034,30 @@ export default function App() {
                     <p className="text-xs text-red-200/90 leading-relaxed font-sans">
                       All FIFA World Cup features, live match trackers, and customized team widgets have been **permanently deactivated and removed** from the platform. We stand in absolute solidarity against systemic bias, racism, and unfairness demonstrated toward the Egypt National Team.
                     </p>
+                  </div>
+
+                  {/* Cinematic Welcome Demo Walkthrough button */}
+                  <div className="p-4 bg-gradient-to-r from-pink-500/10 to-yellow-500/10 border border-pink-500/20 rounded-2xl space-y-2.5 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/10 rounded-full blur-2xl"></div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-400 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-pink-400 animate-pulse" /> Platform Walkthrough Demo
+                      </p>
+                      <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-400 uppercase tracking-widest">Interactive</span>
+                    </div>
+                    <p className="text-xs text-zinc-300 leading-normal font-sans">
+                      Watch the high-fidelity platform presentation showcasing encryption safeguards, E2EE key exchange, secure AI proxies, and user interface features.
+                    </p>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setIsDemoOpen(true);
+                        setIsProfileModalOpen(false);
+                      }}
+                      className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-pink-500 to-yellow-500 hover:brightness-110 active:scale-98 text-white font-black text-xs uppercase tracking-widest transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-white" /> Play Cinematic Showcase
+                    </button>
                   </div>
 
                   <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-2.5">

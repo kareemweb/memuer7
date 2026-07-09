@@ -19,6 +19,7 @@ export interface UserProfile {
     blockedUsers?: string[];
     mutedChats?: string[];
     pinnedChats?: string[];
+    hasSeenDemo?: boolean;
   };
   bannedUntil?: string;
   isHiddenFromDirectory?: boolean;
